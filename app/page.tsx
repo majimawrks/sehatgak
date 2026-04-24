@@ -9,7 +9,9 @@ import type { CalcResultOk } from '@/lib/nutrilevel/types'
 import type { ProductRow } from '@/lib/supabase/types'
 
 // Sample result for visual reference — shows how the badge looks for Level C.
-// Represents: teh botol 330ml, 41g gula, 8g laktosa, 200mg natrium, 0g lemak
+// IMPORTANT: always use a fictional product name here to avoid trademark issues.
+// Names are Yakuza game inspired. Do not replace with a real brand.
+// Represents: oolong 330ml, 41g gula, 8g laktosa, 200mg natrium, 0g lemak
 const sampleResult: CalcResultOk = {
   exempt: false,
   level: 'C',
@@ -107,8 +109,8 @@ export default async function Home() {
               <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">
                 Contoh Produk
               </p>
-              <h2 className="text-lg font-black">Teh Botol 330ml</h2>
-              <p className="text-sm text-gray-500 mb-2">Sosro</p>
+              <h2 className="text-lg font-black">Naga Dojima Oolong 330ml</h2>
+              <p className="text-sm text-gray-500 mb-2">Kamurocho Drinks Co.</p>
               <NutriLevelBadge result={sampleResult} />
               <div className="mt-4">
                 <NutrientBreakdown result={sampleResult} />
