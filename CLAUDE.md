@@ -20,11 +20,11 @@ Full plan: `_docs/plans/plan-v1.md` ← read this before writing any code
 | Infrastructure & planning | ✅ Done |
 | Phase 1 — Calc core + tests | ✅ Done |
 | Phase 2 — UI shell | ⬜ Not started |
-| Phase 3 — Supabase integration | ⬜ Not started |
-| Phase 4 — Gemini OCR | ⬜ Not started |
+| Phase 3 — Supabase integration | ✅ Done |
+| Phase 4 — Gemini OCR | ✅ Done |
 | Phase 5 — Polish | ⬜ Not started |
 
-**Next task:** Phase 2 — UI shell. Build `NutriLevelBadge` and `NutrientBreakdown` components with official colors, wire to hardcoded sample `CalcResult`. See plan-v1.md §8 Phase 2.
+**Next task:** Phase 5 — Polish. Loading skeletons, empty states, error boundaries, basic search on landing. See plan-v1.md §8 Phase 5.
 
 ---
 
