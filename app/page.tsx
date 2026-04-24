@@ -1,11 +1,15 @@
+// Always fetch fresh product list — never statically prerender
+export const dynamic = 'force-dynamic'
+
 import { NutriLevelBadge } from '@/components/NutriLevelBadge'
 import { NutrientBreakdown } from '@/components/NutrientBreakdown'
+import { ProductCard } from '@/components/ProductCard'
+import { createServerClient } from '@/lib/supabase/server'
 import type { CalcResultOk } from '@/lib/nutrilevel/types'
+import type { ProductRow } from '@/lib/supabase/types'
 
-// Sample result for Phase 2 visual verification.
+// Sample result for visual reference — shows how the badge looks for Level C.
 // Represents: teh botol 330ml, 41g gula, 8g laktosa, 200mg natrium, 0g lemak
-// → gula 10 g/100ml (Level C), natrium 60.6 mg/100ml (Level B), lemak 0 (Level A)
-// → final Level C driven by gula
 const sampleResult: CalcResultOk = {
   exempt: false,
   level: 'C',
@@ -19,7 +23,25 @@ const sampleResult: CalcResultOk = {
   notes: [],
 }
 
-export default function Home() {
+async function getRecentProducts(): Promise<ProductRow[]> {
+  const supabase = createServerClient()
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  if (error) {
+    console.error('[page] getRecentProducts:', error.message)
+    return []
+  }
+
+  return (data ?? []) as ProductRow[]
+}
+
+export default async function Home() {
+  const products = await getRecentProducts()
+
   return (
     <main className="flex-1 flex flex-col">
       {/* Header */}
@@ -51,24 +73,49 @@ export default function Home() {
           </a>
         </section>
 
-        {/* Divider */}
         <div className="border-t border-gray-100" />
 
-        {/* Sample result — Phase 2 preview */}
-        <section className="flex flex-col gap-6">
-          <div className="flex items-start justify-between">
-            <div>
+        {/* Recent products from DB */}
+        {products.length > 0 ? (
+          <section className="flex flex-col gap-3">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">
+              Produk Terbaru
+            </h2>
+            <div className="flex flex-col gap-2">
+              {products.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  id={p.id}
+                  nama={p.nama}
+                  merek={p.merek}
+                  level={p.level}
+                  worstNutrient={p.worst_nutrient}
+                  worstDisplayPercent={p.worst_display_percent}
+                  createdAt={p.created_at}
+                />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="flex flex-col gap-6">
+            <p className="text-xs uppercase tracking-widest text-gray-400 font-bold text-center">
+              Belum ada produk tersimpan
+            </p>
+
+            {/* Sample result shown when DB is empty */}
+            <div className="flex flex-col gap-2">
               <p className="text-xs uppercase tracking-widest text-gray-400 font-bold">
                 Contoh Produk
               </p>
-              <h2 className="text-lg font-black mt-0.5">Teh Botol 330ml</h2>
-              <p className="text-sm text-gray-500">Sosro</p>
+              <h2 className="text-lg font-black">Teh Botol 330ml</h2>
+              <p className="text-sm text-gray-500 mb-2">Sosro</p>
+              <NutriLevelBadge result={sampleResult} />
+              <div className="mt-4">
+                <NutrientBreakdown result={sampleResult} />
+              </div>
             </div>
-          </div>
-
-          <NutriLevelBadge result={sampleResult} />
-          <NutrientBreakdown result={sampleResult} />
-        </section>
+          </section>
+        )}
       </div>
 
       {/* Footer */}
