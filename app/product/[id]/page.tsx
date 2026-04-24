@@ -5,6 +5,7 @@ import { NutriLevelBadge } from '@/components/NutriLevelBadge'
 import { NutrientBreakdown } from '@/components/NutrientBreakdown'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import type { ProductRow, Level } from '@/lib/supabase/types'
+import { CATEGORY_LABEL } from '@/lib/supabase/types'
 import type { CalcResultOk } from '@/lib/nutrilevel/types'
 
 async function getProduct(id: string): Promise<ProductRow | null> {
@@ -92,9 +93,19 @@ export default async function ProductPage({ params }: Props) {
 
         {/* ── Product identity ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-0.5">
-          <h1 className="text-xl font-black leading-tight tracking-tight" style={{ color: 'var(--tx-1)' }}>
-            {product.nama}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl font-black leading-tight tracking-tight" style={{ color: 'var(--tx-1)' }}>
+              {product.nama}
+            </h1>
+            {product.category !== 'minuman' && (
+              <span
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"
+                style={{ background: 'var(--border)', color: 'var(--tx-3)' }}
+              >
+                {CATEGORY_LABEL[product.category]}
+              </span>
+            )}
+          </div>
           {product.merek && (
             <p className="text-sm font-medium" style={{ color: 'var(--tx-2)' }}>{product.merek}</p>
           )}
@@ -102,6 +113,22 @@ export default async function ProductPage({ params }: Props) {
             Takaran saji {product.takaran_saji_ml} ml
           </p>
         </div>
+
+        {/* ── Non-beverage disclaimer ───────────────────────────────────── */}
+        {product.category !== 'minuman' && (
+          <div
+            className="rounded-2xl px-4 py-3.5"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--tx-3)' }}>
+              Catatan
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--tx-2)' }}>
+              Ambang batas GGL dalam KMK 301/2026 ditetapkan untuk minuman. Hasil untuk kategori{' '}
+              <strong>{CATEGORY_LABEL[product.category]}</strong> bersifat indikatif.
+            </p>
+          </div>
+        )}
 
         {/* ── Nutri-Level ──────────────────────────────────────────────── */}
         {result ? (

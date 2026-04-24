@@ -174,6 +174,7 @@ export default async function Home({ searchParams }: Props) {
                   id={p.id}
                   nama={p.nama}
                   merek={p.merek}
+                  category={p.category}
                   level={p.level}
                   worstNutrient={p.worst_nutrient}
                   worstDisplayPercent={p.worst_display_percent}

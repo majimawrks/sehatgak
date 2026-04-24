@@ -3,12 +3,26 @@
 
 export type Level = 'A' | 'B' | 'C' | 'D'
 
+// Recognised product categories. Matches the CHECK constraint on the DB column.
+// 'minuman' is the default and the only category with fully-calibrated GGL
+// thresholds (KMK 301/2026). Other categories use the same formula but note
+// that official thresholds for non-beverages come from separate regulations.
+export type Category = 'minuman' | 'snack' | 'makanan' | 'lainnya'
+
+export const CATEGORY_LABEL: Record<Category, string> = {
+  minuman: 'Minuman',
+  snack:   'Snack',
+  makanan: 'Makanan',
+  lainnya: 'Lainnya',
+}
+
 export type ProductRow = {
   id: string
   nama: string
   merek: string | null
   varian: string | null
   ukuran_ml: number | null
+  category: Category
   gula_total_g: number | null
   laktosa_g: number | null
   natrium_mg: number | null

@@ -8,12 +8,15 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { calculateLevel } from '@/lib/nutrilevel'
 import type { OcrResult } from '@/lib/ocr/schema'
 import type { CalcResultOk } from '@/lib/nutrilevel/types'
+import type { Category } from '@/lib/supabase/types'
+import { CATEGORY_LABEL } from '@/lib/supabase/types'
 
 type Step = 'pick' | 'scanning' | 'result' | 'saving' | 'error'
 
 type FormFields = {
   nama: string
   merek: string
+  category: Category
   takaran_saji_ml: string
   gula_total_g: string
   laktosa_g: string
@@ -63,6 +66,7 @@ function ocrToFormFields(ocr: OcrResult): FormFields {
   return {
     nama:                     ocr.nama_produk ?? '',
     merek:                    ocr.merek ?? '',
+    category:                 ocr.kategori ?? 'minuman',
     takaran_saji_ml:          ocr.takaran_saji_ml?.toString() ?? '',
     gula_total_g:             ocr.gula_total_g?.toString() ?? '',
     laktosa_g:                ocr.laktosa_g?.toString() ?? '',
@@ -94,7 +98,8 @@ export function ScanClient() {
   const [noNutritionTable, setNoNutritionTable] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const [fields, setFields] = useState<FormFields>({
-    nama: '', merek: '', takaran_saji_ml: '', gula_total_g: '',
+    nama: '', merek: '', category: 'minuman',
+    takaran_saji_ml: '', gula_total_g: '',
     laktosa_g: '', natrium_mg: '', lemak_jenuh_g: '',
     has_sweetener_additive: false, has_only_natural_sweetener: false,
   })
@@ -168,6 +173,7 @@ export function ScanClient() {
     const body = {
       nama:                    fields.nama.trim(),
       merek:                   fields.merek.trim() || null,
+      category:                fields.category,
       takaran_saji_ml:         parseFloat(fields.takaran_saji_ml),
       gula_total_g:            parseFloat(fields.gula_total_g),
       laktosa_g:               fields.laktosa_g ? parseFloat(fields.laktosa_g) : null,
@@ -384,6 +390,23 @@ export function ScanClient() {
               </div>
             )}
 
+            {/* Non-beverage disclaimer */}
+            {fields.category !== 'minuman' && (
+              <div
+                className="rounded-2xl px-4 py-3.5 flex gap-3 items-start"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--tx-2)' }}>
+                    Catatan
+                  </p>
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--tx-2)' }}>
+                    Ambang batas GGL dalam KMK 301/2026 ditetapkan untuk minuman. Hasil untuk kategori <strong>{CATEGORY_LABEL[fields.category]}</strong> bersifat indikatif.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Live Nutri-Level preview */}
             {result && (
               <div
@@ -416,6 +439,14 @@ export function ScanClient() {
                   value={fields.merek}
                   onChange={(v) => setFields({ ...fields, merek: v })}
                   placeholder="Contoh: Sosro"
+                />
+              </Field>
+
+              <Field label="Kategori">
+                <SelectInput
+                  value={fields.category}
+                  onChange={(v) => setFields({ ...fields, category: v as Category })}
+                  options={Object.entries(CATEGORY_LABEL).map(([value, label]) => ({ value, label }))}
                 />
               </Field>
 
@@ -575,5 +606,30 @@ function NumberInput({
       className={inputClass}
       style={inputStyle}
     />
+  )
+}
+
+function SelectInput({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={inputClass}
+      style={inputStyle}
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   )
 }

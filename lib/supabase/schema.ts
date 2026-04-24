@@ -2,12 +2,15 @@ import { z } from 'zod'
 
 const levelSchema = z.enum(['A', 'B', 'C', 'D'])
 
+export const categorySchema = z.enum(['minuman', 'snack', 'makanan', 'lainnya'])
+
 // Zod schema for validating POST /api/products request body
 export const productInsertSchema = z.object({
   nama: z.string().min(1, 'Nama produk wajib diisi'),
   merek: z.string().nullable().optional(),
   varian: z.string().nullable().optional(),
   ukuran_ml: z.number().positive().nullable().optional(),
+  category: categorySchema.default('minuman'),
   gula_total_g: z.number().min(0).nullable().optional(),
   laktosa_g: z.number().min(0).nullable().optional(),
   natrium_mg: z.number().min(0).nullable().optional(),

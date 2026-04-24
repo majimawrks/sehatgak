@@ -24,10 +24,12 @@ Full plan: `_docs/plans/plan-v1.md` ← read this before writing any code
 | Phase 4 — Gemini OCR | ✅ Done |
 | Phase 5 — Polish | ✅ Done |
 
-**Next task:** v1 feature-complete. Before declaring done (plan-v1.md §10 checklist):
+**Next task:** v1 feature-complete. Remaining before declaring done:
+- Run Supabase migration: `ALTER TABLE products ADD COLUMN category text NOT NULL DEFAULT 'minuman' CHECK (category IN ('minuman', 'snack', 'makanan', 'lainnya'));`
 - End-to-end scan test with a real beverage label (including ingredient-only product)
 - Visual check that KMK level colors match spec on screen, in both light and dark mode
 - Write README.md with setup instructions (env vars, Supabase SQL, `bun dev`)
+- Code review + security review (hand to Opus)
 
 ---
 

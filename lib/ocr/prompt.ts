@@ -1,9 +1,10 @@
-// Gemini extraction prompt — v2.2
+// Gemini extraction prompt — v2.3
 // v2   — has_nutrition_table, multilingual ingredients, ingredient-list fallback
 // v2.1 — explicit fl oz/cl/l → ml conversion
 // v2.2 — single-serve inference from package size; sajian_per_kemasan field added
+// v2.3 — kategori detection (minuman/snack/makanan/lainnya)
 
-export const EXTRACTION_PROMPT = `You are a nutrition label parser for Indonesian beverage products.
+export const EXTRACTION_PROMPT = `You are a nutrition label parser for food and beverage products.
 
 Step 1: Check if the image contains a structured "Informasi Nilai Gizi" (Indonesian) or "Nutrition Facts" / "Nutrition Information" (English) panel. Set "has_nutrition_table" accordingly.
 
@@ -12,6 +13,7 @@ Step 2: If a nutrition table exists, extract values from it. If not, scan the en
 Return ONLY valid JSON matching this schema, no markdown, no commentary:
 {
   "has_nutrition_table": boolean,
+  "kategori": "minuman" | "snack" | "makanan" | "lainnya",
   "takaran_saji_ml": number | null,
   "sajian_per_kemasan": number | null,
   "ukuran_kemasan_ml": number | null,
@@ -32,6 +34,13 @@ Return ONLY valid JSON matching this schema, no markdown, no commentary:
 
 Field rules:
 - "has_nutrition_table": true only if a structured GGL table (baris gula, natrium, lemak jenuh) exists.
+
+- "kategori": product category inferred from the label. Use these rules:
+    "minuman"  — any liquid/drink: teh, kopi, jus, susu, air mineral, soda, energy drink, sports drink, dll.
+    "snack"    — packaged dry snacks: keripik, biskuit, wafer, kacang, coklat, permen, dll.
+    "makanan"  — meals or meal-like products: nasi, mie instan, sarden, sup, saus, dll.
+    "lainnya"  — anything that does not clearly fit the above (suplemen, minyak, bumbu, dll.)
+  Default to "minuman" when uncertain.
 
 - "sajian_per_kemasan": number of servings in the whole package. Look for:
     Indonesian: "sajian per kemasan", "porsi per kemasan"

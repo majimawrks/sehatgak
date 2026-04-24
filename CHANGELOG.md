@@ -6,6 +6,28 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.7.0] — 2026-04-24
+
+### Added
+- **Category support** — products now have a type: Minuman (default), Snack, Makanan, Lainnya
+  - `category` column added to DB (`text NOT NULL DEFAULT 'minuman'` with CHECK constraint)
+  - `Category` type + `CATEGORY_LABEL` map added to `lib/supabase/types.ts`
+  - `categorySchema` added to `lib/supabase/schema.ts`
+  - OCR prompt v2.3: Gemini now detects product category from label context; `kategori` field added to `ocrResultSchema`
+  - Scan form: category `<select>` shown after Merek (pre-filled from OCR, user-editable)
+  - Scan form: non-beverage disclaimer banner appears when category ≠ Minuman
+  - `ProductCard`: non-minuman category shown as a small chip below brand
+  - Product detail page: category chip next to product name; non-beverage note shown when applicable
+
+### Migration
+- Run in Supabase SQL editor:
+  ```sql
+  ALTER TABLE products ADD COLUMN category text NOT NULL DEFAULT 'minuman'
+    CHECK (category IN ('minuman', 'snack', 'makanan', 'lainnya'));
+  ```
+
+---
+
 ## [0.6.0] — 2026-04-24
 
 ### Added

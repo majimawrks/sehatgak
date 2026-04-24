@@ -1,9 +1,11 @@
-import type { Level } from '@/lib/supabase/types'
+import type { Level, Category } from '@/lib/supabase/types'
+import { CATEGORY_LABEL } from '@/lib/supabase/types'
 
 type Props = {
   id: string
   nama: string
   merek: string | null
+  category: Category
   level: Level
   worstNutrient: string
   worstDisplayPercent: number | null
@@ -25,7 +27,7 @@ const NUTRIENT_LABEL: Record<string, string> = {
   lemakJenuh: 'lemak jenuh',
 }
 
-export function ProductCard({ id, nama, merek, level, worstNutrient, worstDisplayPercent }: Props) {
+export function ProductCard({ id, nama, merek, category, level, worstNutrient, worstDisplayPercent }: Props) {
   const color = LEVEL_COLORS[level]
   const nutrientLabel = NUTRIENT_LABEL[worstNutrient] ?? worstNutrient
   const fg = NEEDS_DARK_TEXT.has(level) ? '#1B1916' : '#FFFFFF'
@@ -47,6 +49,14 @@ export function ProductCard({ id, nama, merek, level, worstNutrient, worstDispla
         {merek && (
           <span className="text-xs truncate" style={{ color: 'var(--tx-3)' }}>
             {merek}
+          </span>
+        )}
+        {category !== 'minuman' && (
+          <span
+            className="self-start mt-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+            style={{ background: 'var(--border)', color: 'var(--tx-3)' }}
+          >
+            {CATEGORY_LABEL[category]}
           </span>
         )}
       </div>
