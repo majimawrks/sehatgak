@@ -65,7 +65,7 @@ export default async function Home({ searchParams }: Props) {
       >
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="text-lg font-black tracking-tight text-[var(--tx-1)]">
+            <span className="text-lg font-black tracking-tight" style={{ color: 'var(--tx-1)' }}>
               SehatGak?
             </span>
             <span
@@ -93,15 +93,10 @@ export default async function Home({ searchParams }: Props) {
             Scan label gizi minuman dan ketahui Nutri-Level A/B/C/D
             sesuai standar Kemenkes RI.
           </p>
+          {/* No JS event handlers — hover via Tailwind arbitrary-value class */}
           <a
             href="/scan"
-            className="mt-1 inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-bold text-sm transition-colors"
-            style={{
-              background: 'var(--action)',
-              color: 'var(--action-fg)',
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--action-hi)')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--action)')}
+            className="mt-1 inline-flex items-center gap-2 rounded-full px-6 py-2.5 font-bold text-sm transition-colors bg-[var(--action)] text-[var(--action-fg)] hover:bg-[var(--action-hi)]"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
@@ -137,9 +132,9 @@ export default async function Home({ searchParams }: Props) {
           </div>
           <button
             type="submit"
-            className="rounded-xl px-4 py-2.5 text-sm font-bold transition-colors"
+            className="rounded-xl px-4 py-2.5 text-sm font-bold transition-colors hover:bg-[var(--surface-hi)]"
             style={{
-              background: 'var(--surface-hi)',
+              background: 'var(--surface)',
               border: '1px solid var(--border)',
               color: 'var(--tx-1)',
             }}
@@ -149,9 +144,9 @@ export default async function Home({ searchParams }: Props) {
           {isSearching && (
             <a
               href="/"
-              className="rounded-xl px-3.5 py-2.5 text-sm font-bold flex items-center transition-colors"
+              className="rounded-xl px-3.5 py-2.5 text-sm font-bold flex items-center transition-colors hover:bg-[var(--surface-hi)]"
               style={{
-                background: 'var(--surface-hi)',
+                background: 'var(--surface)',
                 border: '1px solid var(--border)',
                 color: 'var(--tx-3)',
               }}

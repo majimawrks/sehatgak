@@ -17,7 +17,6 @@ const LEVEL_COLORS: Record<Level, string> = {
   D: 'var(--nutri-d)',
 }
 
-// Level B (light green) and C (yellow) need dark text for readability
 const NEEDS_DARK_TEXT = new Set<Level>(['B', 'C'])
 
 const NUTRIENT_LABEL: Record<string, string> = {
@@ -34,20 +33,9 @@ export function ProductCard({ id, nama, merek, level, worstNutrient, worstDispla
   return (
     <a
       href={`/product/${id}`}
-      className="flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all"
-      style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-card)',
-      }}
-      onMouseEnter={(e) => {
-        ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border-lo)'
-        ;(e.currentTarget as HTMLElement).style.background = 'var(--surface-hi)'
-      }}
-      onMouseLeave={(e) => {
-        ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-        ;(e.currentTarget as HTMLElement).style.background = 'var(--surface)'
-      }}
+      className="flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all
+        bg-[var(--surface)] border border-[var(--border)] [box-shadow:var(--shadow-card)]
+        hover:bg-[var(--surface-hi)] hover:border-[var(--border-lo)]"
     >
       <div className="flex flex-col min-w-0 gap-0.5">
         <span
@@ -57,10 +45,7 @@ export function ProductCard({ id, nama, merek, level, worstNutrient, worstDispla
           {nama}
         </span>
         {merek && (
-          <span
-            className="text-xs truncate"
-            style={{ color: 'var(--tx-3)' }}
-          >
+          <span className="text-xs truncate" style={{ color: 'var(--tx-3)' }}>
             {merek}
           </span>
         )}
@@ -68,10 +53,7 @@ export function ProductCard({ id, nama, merek, level, worstNutrient, worstDispla
 
       <div className="flex items-center gap-2.5 ml-4 shrink-0">
         {worstDisplayPercent != null && (
-          <span
-            className="text-xs tabular-nums"
-            style={{ color: 'var(--tx-3)' }}
-          >
+          <span className="text-xs tabular-nums" style={{ color: 'var(--tx-3)' }}>
             {worstDisplayPercent}%&nbsp;{nutrientLabel}
           </span>
         )}
