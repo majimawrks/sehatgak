@@ -31,12 +31,13 @@ Return ONLY valid JSON matching this schema, no markdown, no commentary:
 
 Field rules:
 - "has_nutrition_table": true only if a structured GGL table (baris gula, natrium, lemak jenuh) exists.
-- "takaran_saji_ml": serving size in ml. Convert "1 saji (250 ml)" → 250. Look across languages:
-    Indonesian: "takaran saji", "per sajian"
-    English: "serving size", "per serving"
-    Chinese: "每份", "份量"
-    Japanese: "1食分", "内容量"
-  If the label says "per 100 ml" without a serving size, use 100.
+- "takaran_saji_ml": serving size in ml. ALWAYS output in ml — convert all other units:
+    fl oz → ml: multiply by 29.574  (e.g. "12 fl oz" → 355, "8 fl oz" → 237, "20 fl oz" → 591)
+    cl  → ml: multiply by 10        (e.g. "33 cl" → 330)
+    l   → ml: multiply by 1000      (e.g. "0.5 l" → 500)
+  Look across languages: Indonesian "takaran saji"/"per sajian", English "serving size"/"per serving",
+  Chinese "每份"/"份量", Japanese "1食分"/"内容量".
+  If the label says "per 100 ml" without a separate serving size, use 100.
 - "gula_total_g": total sugars per serving in grams. Look for: "gula", "total gula", "sugars", "total sugars", "sucres".
 - "natrium_mg": sodium per serving in mg. Look for: "natrium", "sodium", "sel / sodium".
 - "lemak_jenuh_g": saturated fat per serving in g. Look for: "lemak jenuh", "saturated fat", "graisses saturées", "grasas saturadas".

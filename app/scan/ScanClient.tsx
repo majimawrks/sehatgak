@@ -420,7 +420,7 @@ export function ScanClient() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Takaran saji (ml)" required>
+                <Field label="Takaran saji (ml)" required hint="1 fl oz ≈ 30 ml · 12 fl oz ≈ 355 ml · 1 cl = 10 ml">
                   <NumberInput value={fields.takaran_saji_ml} onChange={(v) => setFields({ ...fields, takaran_saji_ml: v })} />
                 </Field>
                 <Field label="Gula (g)" required>
@@ -501,10 +501,12 @@ function Field({
   label,
   children,
   required,
+  hint,
 }: {
   label: string
   children: React.ReactNode
   required?: boolean
+  hint?: string
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -513,6 +515,11 @@ function Field({
         {required && <span className="ml-0.5" style={{ color: 'var(--nutri-d)' }}>*</span>}
       </label>
       {children}
+      {hint && (
+        <p className="text-[10px] leading-snug" style={{ color: 'var(--tx-3)' }}>
+          {hint}
+        </p>
+      )}
     </div>
   )
 }
