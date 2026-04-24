@@ -60,9 +60,32 @@ export async function POST(request: Request) {
   }
 
   if (missing.length > 0) {
-    extraWarnings.push(
-      `Nilai berikut tidak terbaca: ${missing.join(', ')}. Periksa foto atau isi secara manual.`
-    )
+    // Give a more specific hint for missing serving size: if we know the package
+    // volume, suggest it as a fallback rather than leaving the user guessing.
+    const missedServing = missing.includes('takaran saji (ml)')
+    const otherMissing = missing.filter((f) => f !== 'takaran saji (ml)')
+
+    if (missedServing) {
+      const pkg = result.data.ukuran_kemasan_ml
+      if (pkg) {
+        extraWarnings.push(
+          `Takaran saji tidak tertera. Ukuran kemasan terdeteksi ${pkg} ml — ` +
+          `jika label bertuliskan "1 sajian per kemasan", gunakan ${pkg} ml sebagai takaran saji.`
+        )
+      } else {
+        extraWarnings.push(
+          'Takaran saji tidak tertera dan ukuran kemasan tidak terlihat. ' +
+          'Coba foto bagian lain kemasan yang menampilkan volume (mis. sisi botol), ' +
+          'atau isi secara manual.'
+        )
+      }
+    }
+
+    if (otherMissing.length > 0) {
+      extraWarnings.push(
+        `Nilai berikut tidak terbaca: ${otherMissing.join(', ')}. Periksa foto atau isi secara manual.`
+      )
+    }
   }
 
   const data: OcrResult = {

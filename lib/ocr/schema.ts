@@ -5,6 +5,8 @@ export const ocrResultSchema = z.object({
   // false means values were extracted from ingredient list / other label text.
   has_nutrition_table: z.boolean().default(false),
   takaran_saji_ml: z.number().positive().nullable(),
+  // v2.2: number of servings per package; used to infer serving size for single-serve products.
+  sajian_per_kemasan: z.number().positive().nullable().default(null),
   gula_total_g: z.number().min(0).nullable(),
   laktosa_g: z.number().min(0).nullable(),
   natrium_mg: z.number().min(0).nullable(),
