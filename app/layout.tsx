@@ -4,7 +4,7 @@ import { DisclaimerModal } from '@/components/DisclaimerModal'
 
 export const metadata: Metadata = {
   title: 'SehatGak — Cek Nutri-Level Minumanmu',
-  description: 'Scan label minuman dan ketahui Nutri-Level A/B/C/D sesuai KMK 301/2026.',
+  description: 'Scan label minuman dan ketahui Nutri-Level A/B/C/D sesuai KMK HK.01.07/MENKES/301/2026.',
 }
 
 // Inline script that runs synchronously before first paint to prevent

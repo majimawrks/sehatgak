@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SehatGak
 
-## Getting Started
+Scan label minuman kemasan Indonesia dan dapatkan nilai **Nutri-Level A/B/C/D** sesuai KMK HK.01.07/MENKES/301/2026.
 
-First, run the development server:
+Tersedia di **[sehatgak.majima.dev](https://sehatgak.majima.dev)**
+
+---
+
+## Cara kerja
+
+1. Scan barcode kemasan — jika produk sudah ada di database, hasil langsung ditampilkan
+2. Jika belum ada, foto label nilai gizi — Gemini OCR membaca angka GGL (Gula, Garam, Lemak) secara otomatis
+3. Periksa & lengkapi data, lalu simpan ke database bersama
+
+---
+
+## Stack
+
+| Layer | Teknologi |
+|---|---|
+| Framework | Next.js 15 + TypeScript strict + Tailwind CSS v4 |
+| Database | Supabase (Postgres) — region Singapore |
+| OCR | Gemini 2.5 Flash via REST (server-side) |
+| Testing | Vitest |
+| Package manager | Bun |
+| Hosting | Netlify → Cloudflare proxy |
+
+---
+
+## Setup lokal
+
+### 1. Prasyarat
+
+- [Bun](https://bun.sh) ≥ 1.1
+- Supabase project (lihat langkah 2)
+- Gemini API key dari [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+
+### 2. Supabase schema
+
+Buat project Supabase baru (region: Singapore), lalu jalankan query berikut di SQL Editor:
+
+```sql
+create table products (
+  id uuid primary key default gen_random_uuid(),
+  nama text not null,
+  merek text,
+  barcode text,
+  category text not null default 'minuman' check (category in ('minuman', 'snack', 'makanan', 'lainnya')),
+  gula_total_g numeric,
+  laktosa_g numeric,
+  natrium_mg numeric,
+  lemak_jenuh_g numeric,
+  takaran_saji_ml int not null,
+  has_sweetener_additive boolean,
+  has_only_natural_sweetener boolean,
+  level char(1) not null check (level in ('A','B','C','D')),
+  worst_nutrient text not null,
+  worst_display_percent int,
+  image_url text,
+  created_at timestamptz default now()
+);
+
+create index products_nama_idx on products using gin (to_tsvector('simple', nama));
+
+alter table products enable row level security;
+create policy "public read" on products for select using (true);
+create policy "public insert" on products for insert with check (true);
+```
+
+### 3. Environment variables
+
+Buat file `.env.local` di root project:
+
+```
+GEMINI_API_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=https://<reference-id>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
+```
+
+- `GEMINI_API_KEY` — dari Google AI Studio, **jangan pernah commit atau expose ke client**
+- `NEXT_PUBLIC_SUPABASE_URL` — dari Settings → General → Reference ID
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — dari Settings → API Keys → Publishable key (`sb_publishable_...`)
+
+> Publishable key aman di-expose ke browser — akses dikontrol oleh RLS policies, bukan kerahasiaan key.
+
+### 4. Jalankan dev server
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+```bash
+bun dev          # dev server (hot reload)
+bun run build    # production build
+bun run test     # jalankan unit tests (Vitest)
+bun run lint     # ESLint
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Lisensi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

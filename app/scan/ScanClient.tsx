@@ -123,6 +123,8 @@ export function ScanClient() {
     has_sweetener_additive: false, has_only_natural_sweetener: false,
   })
 
+  const unit = fields.category === 'minuman' ? 'ml' : 'g'
+
   function calcResult(): CalcResultOk | null {
     const input = fieldsToCalcInput(fields)
     if (!input.takaranSajiMl) return null
@@ -559,7 +561,7 @@ export function ScanClient() {
                     Catatan
                   </p>
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--tx-2)' }}>
-                    Ambang batas GGL dalam KMK 301/2026 ditetapkan untuk minuman. Hasil untuk kategori <strong>{CATEGORY_LABEL[fields.category]}</strong> bersifat indikatif.
+                    Ambang batas GGL (Gula, Garam, Lemak) dalam KMK HK.01.07/MENKES/301/2026 ditetapkan untuk minuman. Hasil untuk kategori <strong>{CATEGORY_LABEL[fields.category]}</strong> bersifat indikatif.
                   </p>
                 </div>
               </div>
@@ -632,7 +634,7 @@ export function ScanClient() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Takaran saji (ml)" required hint="1 fl oz ≈ 30 ml · 12 fl oz ≈ 355 ml · 1 cl = 10 ml">
+                <Field label={`Takaran saji (${unit})`} required hint={unit === 'ml' ? '1 fl oz ≈ 30 ml · 12 fl oz ≈ 355 ml · 1 cl = 10 ml' : undefined}>
                   <NumberInput value={fields.takaran_saji_ml} onChange={(v) => setFields({ ...fields, takaran_saji_ml: v })} />
                 </Field>
                 <Field label="Gula (g)" required>

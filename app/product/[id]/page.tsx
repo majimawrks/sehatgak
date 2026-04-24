@@ -51,6 +51,7 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound()
 
   const result = productToCalcResult(product)
+  const unit = product.category === 'minuman' ? 'ml' : 'g'
 
   const addedDate = new Date(product.created_at).toLocaleDateString('id-ID', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -110,7 +111,7 @@ export default async function ProductPage({ params }: Props) {
             <p className="text-sm font-medium" style={{ color: 'var(--tx-2)' }}>{product.merek}</p>
           )}
           <p className="text-xs mt-0.5" style={{ color: 'var(--tx-3)' }}>
-            Takaran saji {product.takaran_saji_ml} ml
+            Takaran saji {product.takaran_saji_ml} {unit}
             {product.barcode && product.barcode !== 'N/A' && (
               <> · Barcode <span className="font-mono">{product.barcode}</span></>
             )}
@@ -127,7 +128,7 @@ export default async function ProductPage({ params }: Props) {
               Catatan
             </p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--tx-2)' }}>
-              Ambang batas GGL dalam KMK 301/2026 ditetapkan untuk minuman. Hasil untuk kategori{' '}
+              Ambang batas GGL (Gula, Garam, Lemak) dalam KMK HK.01.07/MENKES/301/2026 ditetapkan untuk minuman. Hasil untuk kategori{' '}
               <strong>{CATEGORY_LABEL[product.category]}</strong> bersifat indikatif.
             </p>
           </div>
@@ -169,7 +170,7 @@ export default async function ProductPage({ params }: Props) {
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
         >
           <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--tx-3)' }}>
-            Nilai Gizi per Saji ({product.takaran_saji_ml} ml)
+            Nilai Gizi per Saji ({product.takaran_saji_ml} {unit})
           </p>
           <div className="grid grid-cols-2 gap-y-2.5 text-sm">
             {product.gula_total_g != null && (

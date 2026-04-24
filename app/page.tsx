@@ -72,7 +72,7 @@ export default async function Home({ searchParams }: Props) {
               className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
               style={{ background: 'var(--border)', color: 'var(--tx-3)' }}
             >
-              KMK 301/2026
+              KMK HK.01.07/MENKES/301/2026
             </span>
           </div>
           <ThemeToggle />
