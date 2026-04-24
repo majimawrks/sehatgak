@@ -6,6 +6,8 @@ export const ocrResultSchema = z.object({
   has_nutrition_table: z.boolean().default(false),
   // v2.3: product category detected from label context.
   kategori: z.enum(['minuman', 'snack', 'makanan', 'lainnya']).nullable().default(null),
+  // barcode number printed on the packaging (EAN-13 / UPC-A / etc.), null if not visible.
+  barcode: z.string().nullable().default(null),
   takaran_saji_ml: z.number().positive().nullable(),
   // v2.2: number of servings per package; used to infer serving size for single-serve products.
   sajian_per_kemasan: z.number().positive().nullable().default(null),

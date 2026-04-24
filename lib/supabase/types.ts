@@ -23,6 +23,7 @@ export type ProductRow = {
   varian: string | null
   ukuran_ml: number | null
   category: Category
+  barcode: string
   gula_total_g: number | null
   laktosa_g: number | null
   natrium_mg: number | null

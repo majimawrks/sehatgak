@@ -1,8 +1,9 @@
-// Gemini extraction prompt — v2.3
+// Gemini extraction prompt — v2.4
 // v2   — has_nutrition_table, multilingual ingredients, ingredient-list fallback
 // v2.1 — explicit fl oz/cl/l → ml conversion
 // v2.2 — single-serve inference from package size; sajian_per_kemasan field added
 // v2.3 — kategori detection (minuman/snack/makanan/lainnya)
+// v2.4 — barcode number extraction
 
 export const EXTRACTION_PROMPT = `You are a nutrition label parser for food and beverage products.
 
@@ -14,6 +15,7 @@ Return ONLY valid JSON matching this schema, no markdown, no commentary:
 {
   "has_nutrition_table": boolean,
   "kategori": "minuman" | "snack" | "makanan" | "lainnya",
+  "barcode": string | null,
   "takaran_saji_ml": number | null,
   "sajian_per_kemasan": number | null,
   "ukuran_kemasan_ml": number | null,
@@ -34,6 +36,10 @@ Return ONLY valid JSON matching this schema, no markdown, no commentary:
 
 Field rules:
 - "has_nutrition_table": true only if a structured GGL table (baris gula, natrium, lemak jenuh) exists.
+
+- "barcode": the numeric digits printed below or beside the barcode symbol (EAN-13, UPC-A, EAN-8,
+  or similar). Read only the DIGITS — do not describe the bars. Usually 8–14 digits, no spaces.
+  Set to null if no barcode or barcode digits are visible in the image.
 
 - "kategori": product category inferred from the label. Use these rules:
     "minuman"  — any liquid/drink: teh, kopi, jus, susu, air mineral, soda, energy drink, sports drink, dll.

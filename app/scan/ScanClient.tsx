@@ -17,6 +17,8 @@ type FormFields = {
   nama: string
   merek: string
   category: Category
+  barcode: string
+  barcode_na: boolean      // UI-only: "Barcode tidak ada / tidak terbaca"
   takaran_saji_ml: string
   gula_total_g: string
   laktosa_g: string
@@ -67,6 +69,8 @@ function ocrToFormFields(ocr: OcrResult): FormFields {
     nama:                     ocr.nama_produk ?? '',
     merek:                    ocr.merek ?? '',
     category:                 ocr.kategori ?? 'minuman',
+    barcode:                  ocr.barcode ?? '',
+    barcode_na:               false,
     takaran_saji_ml:          ocr.takaran_saji_ml?.toString() ?? '',
     gula_total_g:             ocr.gula_total_g?.toString() ?? '',
     laktosa_g:                ocr.laktosa_g?.toString() ?? '',
@@ -99,6 +103,7 @@ export function ScanClient() {
   const [preview, setPreview] = useState<string | null>(null)
   const [fields, setFields] = useState<FormFields>({
     nama: '', merek: '', category: 'minuman',
+    barcode: '', barcode_na: false,
     takaran_saji_ml: '', gula_total_g: '',
     laktosa_g: '', natrium_mg: '', lemak_jenuh_g: '',
     has_sweetener_additive: false, has_only_natural_sweetener: false,
@@ -167,6 +172,10 @@ export function ScanClient() {
       setErrorMsg('Nama produk wajib diisi.')
       return
     }
+    if (!fields.barcode_na && !fields.barcode.trim()) {
+      setErrorMsg('Masukkan barcode produk, atau centang "Barcode tidak ada / tidak terbaca".')
+      return
+    }
 
     setStep('saving')
 
@@ -174,6 +183,7 @@ export function ScanClient() {
       nama:                    fields.nama.trim(),
       merek:                   fields.merek.trim() || null,
       category:                fields.category,
+      barcode:                 fields.barcode_na ? 'N/A' : fields.barcode.trim(),
       takaran_saji_ml:         parseFloat(fields.takaran_saji_ml),
       gula_total_g:            parseFloat(fields.gula_total_g),
       laktosa_g:               fields.laktosa_g ? parseFloat(fields.laktosa_g) : null,
@@ -450,6 +460,29 @@ export function ScanClient() {
                 />
               </Field>
 
+              <Field label="Barcode" required hint="Angka di bawah garis barcode pada kemasan">
+                <TextInput
+                  value={fields.barcode_na ? 'N/A' : fields.barcode}
+                  onChange={(v) => setFields({ ...fields, barcode: v })}
+                  placeholder="Contoh: 8991234567890"
+                  disabled={fields.barcode_na}
+                />
+                <label
+                  className="flex items-center gap-2 text-xs cursor-pointer"
+                  style={{ color: 'var(--tx-2)' }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={fields.barcode_na}
+                    onChange={(e) =>
+                      setFields({ ...fields, barcode_na: e.target.checked, barcode: '' })
+                    }
+                    className="rounded"
+                  />
+                  Barcode tidak ada / tidak terbaca
+                </label>
+              </Field>
+
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Takaran saji (ml)" required hint="1 fl oz ≈ 30 ml · 12 fl oz ≈ 355 ml · 1 cl = 10 ml">
                   <NumberInput value={fields.takaran_saji_ml} onChange={(v) => setFields({ ...fields, takaran_saji_ml: v })} />
@@ -568,10 +601,12 @@ function TextInput({
   value,
   onChange,
   placeholder = '',
+  disabled = false,
 }: {
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  disabled?: boolean
 }) {
   return (
     <input
@@ -579,8 +614,9 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
+      disabled={disabled}
       className={inputClass}
-      style={inputStyle}
+      style={{ ...inputStyle, opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : undefined }}
     />
   )
 }

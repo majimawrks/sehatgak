@@ -111,6 +111,9 @@ export default async function ProductPage({ params }: Props) {
           )}
           <p className="text-xs mt-0.5" style={{ color: 'var(--tx-3)' }}>
             Takaran saji {product.takaran_saji_ml} ml
+            {product.barcode && product.barcode !== 'N/A' && (
+              <> · Barcode <span className="font-mono">{product.barcode}</span></>
+            )}
           </p>
         </div>
 

@@ -6,6 +6,23 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.8.0] — 2026-04-24
+
+### Added
+- **Barcode field** — product barcode stored as a consistent identifier across different user-supplied names
+  - `barcode` column added to DB (`text NOT NULL DEFAULT 'N/A'`)
+  - OCR prompt v2.4: Gemini reads the numeric digits below the barcode symbol (EAN-13, UPC-A, etc.) and pre-fills the field
+  - Scan form: barcode input shown after Kategori; required before saving unless "Barcode tidak ada / tidak terbaca" is checked (stores 'N/A')
+  - Product detail page: barcode shown inline with serving size when available
+
+### Migration
+- Run in Supabase SQL editor:
+  ```sql
+  ALTER TABLE products ADD COLUMN barcode text NOT NULL DEFAULT 'N/A';
+  ```
+
+---
+
 ## [0.7.0] — 2026-04-24
 
 ### Added

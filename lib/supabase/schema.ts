@@ -11,6 +11,7 @@ export const productInsertSchema = z.object({
   varian: z.string().nullable().optional(),
   ukuran_ml: z.number().positive().nullable().optional(),
   category: categorySchema.default('minuman'),
+  barcode: z.string().min(1).default('N/A'),
   gula_total_g: z.number().min(0).nullable().optional(),
   laktosa_g: z.number().min(0).nullable().optional(),
   natrium_mg: z.number().min(0).nullable().optional(),
