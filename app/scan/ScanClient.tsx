@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { NutriLevelBadge } from '@/components/NutriLevelBadge'
 import { NutrientBreakdown } from '@/components/NutrientBreakdown'
@@ -11,7 +12,19 @@ import type { CalcResultOk } from '@/lib/nutrilevel/types'
 import type { Category } from '@/lib/supabase/types'
 import { CATEGORY_LABEL } from '@/lib/supabase/types'
 
-type Step = 'pick' | 'scanning' | 'result' | 'saving' | 'error'
+// Loaded only on the client — html5-qrcode uses browser APIs
+const BarcodeScanner = dynamic(
+  () => import('@/components/BarcodeScanner').then(m => m.BarcodeScanner),
+  { ssr: false }
+)
+
+// 'barcode'    — barcode scanner, first screen
+// 'photo-pick' — photo upload, after barcode not found (or skipped)
+// 'scanning'   — Gemini OCR in progress
+// 'result'     — editable form + live Nutri-Level
+// 'saving'     — POST in progress
+// 'error'      — unrecoverable OCR/network error
+type Step = 'barcode' | 'photo-pick' | 'scanning' | 'result' | 'saving' | 'error'
 
 type FormFields = {
   nama: string
@@ -96,7 +109,8 @@ function fieldsToCalcInput(f: FormFields) {
 export function ScanClient() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [step, setStep] = useState<Step>('pick')
+  const [step, setStep] = useState<Step>('barcode')
+  const [lookingUp, setLookingUp] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [warnings, setWarnings] = useState<string[]>([])
   const [noNutritionTable, setNoNutritionTable] = useState(false)
@@ -117,7 +131,35 @@ export function ScanClient() {
     return result
   }
 
+  // Called when the barcode scanner detects a code.
+  // Checks the DB first — redirects if found, goes to photo-pick if not.
+  async function handleBarcodeScan(code: string) {
+    setLookingUp(true)
+    try {
+      const res = await fetch(`/api/products/lookup?barcode=${encodeURIComponent(code)}`)
+      const json = await res.json() as { found: boolean; id?: string }
+      if (json.found && json.id) {
+        router.push(`/product/${json.id}`)
+        return
+      }
+      // Not in DB yet — carry the barcode into the photo step
+      setFields(prev => ({ ...prev, barcode: code, barcode_na: false }))
+      setStep('photo-pick')
+    } catch {
+      // Network error — still let user proceed with photo
+      setFields(prev => ({ ...prev, barcode: code, barcode_na: false }))
+      setStep('photo-pick')
+    } finally {
+      setLookingUp(false)
+    }
+  }
+
   async function handleFile(file: File) {
+    // Capture barcode from the scanner step before the async OCR overwrites fields.
+    // We trust the physical scanner over Gemini's visual barcode read.
+    const scannedBarcode = fields.barcode
+    const scannedBarcodeNa = fields.barcode_na
+
     setStep('scanning')
     setErrorMsg('')
     setWarnings([])
@@ -156,7 +198,13 @@ export function ScanClient() {
     }
 
     const ocr = json as OcrResult
-    setFields(ocrToFormFields(ocr))
+    const ocrFields = ocrToFormFields(ocr)
+    // Restore the physically-scanned barcode — more reliable than OCR image reading
+    if (scannedBarcode && !scannedBarcodeNa) {
+      ocrFields.barcode = scannedBarcode
+      ocrFields.barcode_na = false
+    }
+    setFields(ocrFields)
     setWarnings(ocr.warnings ?? [])
     setNoNutritionTable(!ocr.has_nutrition_table)
     setStep('result')
@@ -249,38 +297,124 @@ export function ScanClient() {
 
       <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6 flex flex-col gap-6">
 
-        {/* ─────────────────────────── Step: pick ──────────────────── */}
-        {step === 'pick' && (
-          <section className="flex flex-col items-center gap-4 py-6">
+        {/* ──────────────────── Step: barcode ──────────────────────── */}
+        {step === 'barcode' && (
+          <section className="flex flex-col gap-5 py-2">
+
+            {/* Instruction */}
+            <div>
+              <p className="font-bold text-sm" style={{ color: 'var(--tx-1)' }}>
+                Cari dengan barcode
+              </p>
+              <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--tx-3)' }}>
+                Arahkan ke barcode (garis hitam-putih) pada kemasan.
+                Biasanya ada di bagian belakang atau bawah produk.
+              </p>
+            </div>
+
+            {/* Scanner — replaced with spinner while doing DB lookup */}
+            {lookingUp ? (
+              <div
+                className="rounded-2xl flex flex-col items-center justify-center gap-3 py-16"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--action)' }} aria-hidden>
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round" />
+                </svg>
+                <p className="text-sm font-medium" style={{ color: 'var(--tx-2)' }}>Memeriksa database…</p>
+              </div>
+            ) : (
+              <BarcodeScanner onScan={handleBarcodeScan} />
+            )}
+
+            {/* Divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1" style={{ height: '1px', background: 'var(--border)' }} />
+              <span className="text-xs font-semibold" style={{ color: 'var(--tx-3)' }}>atau</span>
+              <div className="flex-1" style={{ height: '1px', background: 'var(--border)' }} />
+            </div>
+
+            {/* Photo alternative */}
             <button
               type="button"
-              onClick={() => inputRef.current?.click()}
-              className="w-full rounded-2xl flex flex-col items-center justify-center gap-4 py-14 transition-colors cursor-pointer"
-              style={{
-                border: '2px dashed var(--border)',
-                background: 'var(--surface)',
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--tx-3)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--border)')}
+              onClick={() => setStep('photo-pick')}
+              className="w-full rounded-2xl flex items-center gap-4 px-4 py-4 text-left transition-colors
+                bg-[var(--surface)] border border-[var(--border)]
+                hover:bg-[var(--surface-hi)] hover:border-[var(--border-lo)]"
             >
               <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: 'var(--surface-hi)' }}
               >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--tx-2)' }} aria-hidden>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--tx-2)' }} aria-hidden>
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                   <circle cx="12" cy="13" r="4" />
                 </svg>
               </div>
-              <div className="text-center">
+              <div>
                 <p className="font-bold text-sm" style={{ color: 'var(--tx-1)' }}>
-                  Foto label gizi
+                  Foto label nilai gizi atau daftar bahan
                 </p>
-                <p className="text-xs mt-1 leading-relaxed max-w-[200px]" style={{ color: 'var(--tx-3)' }}>
-                  Ketuk untuk memilih foto atau gunakan kamera. Bisa foto tabel gizi atau daftar bahan.
+                <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--tx-3)' }}>
+                  Untuk produk baru, atau jika barcode tidak bisa dibaca
                 </p>
               </div>
             </button>
+
+          </section>
+        )}
+
+        {/* ──────────────────── Step: photo-pick ───────────────────── */}
+        {step === 'photo-pick' && (
+          <section className="flex flex-col gap-5 py-2">
+
+            {/* Context: came from barcode scanner (not found in DB) */}
+            {fields.barcode && !fields.barcode_na && (
+              <div
+                className="rounded-2xl px-4 py-3.5"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--tx-3)' }}>
+                  Barcode terdeteksi
+                </p>
+                <p className="font-mono text-sm font-semibold" style={{ color: 'var(--tx-1)' }}>
+                  {fields.barcode}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--tx-3)' }}>
+                  Belum ada di database — foto label untuk menambahkan produk ini
+                </p>
+              </div>
+            )}
+
+            {/* Photo upload button */}
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="w-full rounded-2xl flex flex-col items-center justify-center gap-4 py-10 transition-colors cursor-pointer"
+              style={{ border: '2px dashed var(--border)', background: 'var(--surface)' }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--tx-3)')}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--border)')}
+            >
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: 'var(--surface-hi)' }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--tx-2)' }} aria-hidden>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </div>
+              <div className="text-center px-4">
+                <p className="font-bold text-sm" style={{ color: 'var(--tx-1)' }}>
+                  Foto label nilai gizi atau daftar bahan
+                </p>
+                <p className="text-xs mt-1.5 leading-relaxed" style={{ color: 'var(--tx-3)' }}>
+                  Ketuk untuk memilih dari galeri atau ambil foto langsung.
+                  Pastikan tulisan terbaca jelas dan seluruh tabel masuk dalam frame.
+                </p>
+              </div>
+            </button>
+
             <input
               ref={inputRef}
               type="file"
@@ -292,6 +426,20 @@ export function ScanClient() {
                 if (file) handleFile(file)
               }}
             />
+
+            {/* Back to barcode scanner */}
+            <button
+              type="button"
+              onClick={() => setStep('barcode')}
+              className="flex items-center gap-1.5 text-sm font-semibold self-start"
+              style={{ color: 'var(--tx-3)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Kembali ke scan barcode
+            </button>
+
           </section>
         )}
 
@@ -335,7 +483,7 @@ export function ScanClient() {
             </div>
             <button
               type="button"
-              onClick={() => { setStep('pick'); setPreview(null) }}
+              onClick={() => { setStep('barcode'); setPreview(null) }}
               className="rounded-full px-6 py-2.5 font-bold text-sm transition-colors"
               style={{
                 border: '1px solid var(--border)',
@@ -529,7 +677,7 @@ export function ScanClient() {
             <div className="flex gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => { setStep('pick'); setPreview(null); setErrorMsg('') }}
+                onClick={() => { setStep('barcode'); setPreview(null); setErrorMsg('') }}
                 disabled={step === 'saving'}
                 className="flex-1 rounded-full px-4 py-2.5 font-bold text-sm transition-colors disabled:opacity-40"
                 style={{
