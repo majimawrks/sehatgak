@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { DisclaimerModal } from '@/components/DisclaimerModal'
 
 export const metadata: Metadata = {
   title: 'SehatGak — Cek Nutri-Level Minumanmu',
@@ -31,6 +32,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full flex flex-col antialiased">
+        <DisclaimerModal />
         {children}
       </body>
     </html>
