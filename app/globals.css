@@ -1,27 +1,109 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Dark mode ──────────────────────────────────────────────────────────────
+   Triggered by .dark class on <html>. An inline script in layout.tsx reads
+   localStorage on page load to apply the class before first paint (no flash). */
+@custom-variant dark (&:is(.dark *));
 
-  /* KMK 301/2026 Lampiran B — official Nutri-Level colors (CMYK → sRGB) */
-  --nutri-a: #00833E;  /* CMYK 100C 25M 100Y 0K  — hijau tua  */
-  --nutri-b: #87C440;  /* CMYK 55C  0M  100Y 0K  — hijau muda */
-  --nutri-c: #FABE2D;  /* CMYK 0C   30M 90Y  0K  — kuning     */
-  --nutri-d: #C8161D;  /* CMYK 20C  100M 100Y 10K — merah      */
+/* ─── Semantic design tokens ─────────────────────────────────────────────────
+   All colors used in components reference these variables so a single .dark
+   class flip switches the entire palette. */
+:root {
+  /* KMK 301/2026 Lampiran B — official Nutri-Level colors */
+  --nutri-a: #00833E;   /* CMYK 100C 25M 100Y 0K — hijau tua  */
+  --nutri-b: #87C440;   /* CMYK 55C  0M  100Y 0K — hijau muda */
+  --nutri-c: #FABE2D;   /* CMYK 0C   30M 90Y  0K — kuning     */
+  --nutri-d: #C8161D;   /* CMYK 20C  100M 100Y 10K — merah    */
+
+  /* Light mode — warm cream palette (dim, not stark white) */
+  --bg:          #EDEBE6;   /* page background — warm cream        */
+  --surface:     #F6F5F2;   /* card / panel background             */
+  --surface-hi:  #FFFFFF;   /* elevated elements (inputs, modals)  */
+  --border:      #E0DDD7;   /* default border                      */
+  --border-lo:   #EAE8E3;   /* dividers / very subtle borders      */
+
+  --tx-1:        #1B1916;   /* primary text — warm near-black      */
+  --tx-2:        #6B6960;   /* secondary text — muted warm gray    */
+  --tx-3:        #A6A49C;   /* placeholder / label text            */
+
+  --action:      #1A7A48;   /* primary CTA — muted forest green    */
+  --action-fg:   #FFFFFF;   /* text on action bg                   */
+  --action-hi:   #15643C;   /* hover state of action bg            */
+
+  --ring:        rgba(26,122,72,0.28);  /* focus ring color         */
+
+  --warn-bg:     #FEFBF0;
+  --warn-border: #F0D878;
+  --warn-tx:     #7A5C08;
+
+  --err-bg:      #FEF3F3;
+  --err-border:  #F5C0C0;
+  --err-tx:      #8B1E1E;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-none: none;
 }
 
+.dark {
+  /* Dark mode — deep slate with warm undertone */
+  --bg:          #18181B;
+  --surface:     #222227;
+  --surface-hi:  #2D2D33;
+  --border:      #36363C;
+  --border-lo:   #2A2A30;
+
+  --tx-1:        #E8E5DF;
+  --tx-2:        #A2A09A;
+  --tx-3:        #68665E;
+
+  --action:      #2BAA72;   /* brighter green on dark bg           */
+  --action-fg:   #FFFFFF;
+  --action-hi:   #24956A;
+
+  --ring:        rgba(43,170,114,0.32);
+
+  --warn-bg:     #1E1A02;
+  --warn-border: #6A5408;
+  --warn-tx:     #F0D070;
+
+  --err-bg:      #200C0C;
+  --err-border:  #6B1818;
+  --err-tx:      #F0A0A0;
+
+  --shadow-card: none;
+  --shadow-none: none;
+}
+
+/* ─── Global base ────────────────────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --color-nutri-a: var(--nutri-a);
   --color-nutri-b: var(--nutri-b);
   --color-nutri-c: var(--nutri-c);
   --color-nutri-d: var(--nutri-d);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
+
+body {
+  background: var(--bg);
+  color: var(--tx-1);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth color transitions when toggling theme */
+body,
+body * {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* ─── Scrollbar (subtle in both modes) ───────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--tx-3); }

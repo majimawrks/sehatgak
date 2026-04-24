@@ -6,6 +6,50 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.6.0] — 2026-04-24
+
+### Added
+- **Ingredient-list OCR** — products without a nutrition table are now processed:
+  - OCR prompt v2: detects `has_nutrition_table`, falls back to scanning ingredient list, handles multilingual labels (Indonesian / English / Chinese / Japanese) and 20+ sweetener names by E-number and common aliases
+  - `OcrResult.has_nutrition_table` field (Zod schema updated)
+  - API returns 200 with `warnings` array instead of 422 when critical fields are missing — user can fill in values manually in the edit form
+  - Scan page shows a dedicated banner when no nutrition table is detected
+- **Light / Dark mode**
+  - `@custom-variant dark` (class-based, no media-query conflict)
+  - Full semantic CSS token system (`--bg`, `--surface`, `--surface-hi`, `--tx-1/2/3`, `--action`, warn/err tokens)
+  - Warm cream light mode (`#EDEBE6` background) and deep slate dark mode (`#18181B`)
+  - Anti-flash inline script in `<head>` reads `localStorage` before first paint
+  - `components/ThemeToggle.tsx` — sun/moon SVG button, persists to localStorage, respects `prefers-color-scheme` on first visit
+- `ThemeToggle` placed in all page headers (landing, scan, product detail)
+
+### Changed
+- All components and pages now use CSS variables for color — fully themed, no hardcoded gray-* classes
+- `NutriLevelBadge`: level B/C now use dark foreground text for accessibility
+- `NutrientBreakdown`: uses semantic `--surface-hi` / `--warn-*` / `--err-*` tokens
+- `ProductCard`: rounded-2xl, subtle hover state using CSS vars, dark-safe foreground
+- Sticky header with `backdrop-filter: blur` on all pages
+- `ScanClient`: scan target area is now a `<button>` (keyboard accessible), SVG icons replace emoji
+- `globals.css`: smooth 0.15s color transitions for theme switch, custom scrollbar
+
+---
+
+## [0.5.0] — 2026-04-24
+
+### Added
+- `app/loading.tsx` — skeleton UI for landing page while Supabase fetch resolves
+- `app/error.tsx` — error boundary with "Coba Lagi" + "Ke Beranda" actions
+- `app/not-found.tsx` — global 404 page
+- `app/product/[id]/page.tsx` — product detail page: recalculates full breakdown from stored raw values, shows `NutriLevelBadge` + `NutrientBreakdown` + raw nutrition table
+- Basic search on landing page via `?q=` URL param (Supabase ILIKE on `nama`)
+- Distinct empty state for "no search results" vs "DB is empty"
+
+### Changed
+- `components/ProductCard.tsx` — card is now a link to `/product/[id]`, with hover transition
+- `app/globals.css` — body background changed from pure white to `#f9fafb` (gray-50) for softer feel
+- `app/page.tsx` — consumes `searchParams` (Next.js 15 async), passes query to Supabase, renders search bar
+
+---
+
 ## [0.4.0] — 2026-04-24
 
 ### Added

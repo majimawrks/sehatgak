@@ -19,12 +19,15 @@ Full plan: `_docs/plans/plan-v1.md` ← read this before writing any code
 |---|---|
 | Infrastructure & planning | ✅ Done |
 | Phase 1 — Calc core + tests | ✅ Done |
-| Phase 2 — UI shell | ⬜ Not started |
+| Phase 2 — UI shell | ✅ Done |
 | Phase 3 — Supabase integration | ✅ Done |
 | Phase 4 — Gemini OCR | ✅ Done |
-| Phase 5 — Polish | ⬜ Not started |
+| Phase 5 — Polish | ✅ Done |
 
-**Next task:** Phase 5 — Polish. Loading skeletons, empty states, error boundaries, basic search on landing. See plan-v1.md §8 Phase 5.
+**Next task:** v1 feature-complete. Before declaring done (plan-v1.md §10 checklist):
+- End-to-end scan test with a real beverage label (including ingredient-only product)
+- Visual check that KMK level colors match spec on screen, in both light and dark mode
+- Write README.md with setup instructions (env vars, Supabase SQL, `bun dev`)
 
 ---
 
@@ -106,6 +109,7 @@ Ask the project owner for values if missing. Do not generate or guess them.
 - Netlify domain setup requires a TXT ownership verification record before the CNAME
 - Netlify "Contains secret values" forces per-context input — only fill Production for `GEMINI_API_KEY`
 - Cloudflare proxy must be OFF (grey cloud) while Netlify provisions SSL cert, then ON after
+- `NEXT_PUBLIC_SUPABASE_URL` in Netlify must include `https://` — e.g. `https://xxxx.supabase.co`. Without it, Supabase client throws "Invalid supabaseUrl" and all pages 500.
 
 ---
 

@@ -17,39 +17,77 @@ const LEVEL_COLORS: Record<Level, string> = {
   D: 'var(--nutri-d)',
 }
 
+// Level B (light green) and C (yellow) need dark text for readability
+const NEEDS_DARK_TEXT = new Set<Level>(['B', 'C'])
+
 const NUTRIENT_LABEL: Record<string, string> = {
-  gula: 'gula',
-  natrium: 'garam',
+  gula:       'gula',
+  natrium:    'garam',
   lemakJenuh: 'lemak jenuh',
 }
 
-export function ProductCard({ nama, merek, level, worstNutrient, worstDisplayPercent }: Props) {
+export function ProductCard({ id, nama, merek, level, worstNutrient, worstDisplayPercent }: Props) {
   const color = LEVEL_COLORS[level]
   const nutrientLabel = NUTRIENT_LABEL[worstNutrient] ?? worstNutrient
+  const fg = NEEDS_DARK_TEXT.has(level) ? '#1B1916' : '#FFFFFF'
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
-      <div className="flex flex-col min-w-0">
-        <span className="font-bold text-gray-900 truncate">{nama}</span>
+    <a
+      href={`/product/${id}`}
+      className="flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all"
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-card)',
+      }}
+      onMouseEnter={(e) => {
+        ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border-lo)'
+        ;(e.currentTarget as HTMLElement).style.background = 'var(--surface-hi)'
+      }}
+      onMouseLeave={(e) => {
+        ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
+        ;(e.currentTarget as HTMLElement).style.background = 'var(--surface)'
+      }}
+    >
+      <div className="flex flex-col min-w-0 gap-0.5">
+        <span
+          className="font-bold text-sm truncate leading-snug"
+          style={{ color: 'var(--tx-1)' }}
+        >
+          {nama}
+        </span>
         {merek && (
-          <span className="text-xs text-gray-400 truncate">{merek}</span>
+          <span
+            className="text-xs truncate"
+            style={{ color: 'var(--tx-3)' }}
+          >
+            {merek}
+          </span>
         )}
       </div>
 
-      <div className="flex items-center gap-2 ml-4 shrink-0">
+      <div className="flex items-center gap-2.5 ml-4 shrink-0">
         {worstDisplayPercent != null && (
-          <span className="text-xs text-gray-400">
-            {worstDisplayPercent}% {nutrientLabel}
+          <span
+            className="text-xs tabular-nums"
+            style={{ color: 'var(--tx-3)' }}
+          >
+            {worstDisplayPercent}%&nbsp;{nutrientLabel}
           </span>
         )}
         <div
-          className="flex items-center justify-center rounded-lg text-white font-black text-lg"
-          style={{ backgroundColor: color, width: '2.5rem', height: '2.5rem' }}
+          className="flex items-center justify-center rounded-lg font-black text-lg"
+          style={{
+            backgroundColor: color,
+            color: fg,
+            width: '2.5rem',
+            height: '2.5rem',
+          }}
           aria-label={`Nutri-Level ${level}`}
         >
           {level}
         </div>
       </div>
-    </div>
+    </a>
   )
 }

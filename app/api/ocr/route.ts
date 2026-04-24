@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
 import { extractNutritionLabel } from '@/lib/ocr/gemini'
 import { getMissingFields } from '@/lib/ocr/schema'
+import type { OcrResult } from '@/lib/ocr/schema'
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
 type AllowedMime = (typeof ALLOWED_TYPES)[number]
 
-// POST /api/ocr — accepts multipart/form-data with an "image" field
+// POST /api/ocr — accepts multipart/form-data with an "image" field.
+// Always returns 200 with OcrResult when Gemini parsing succeeds, even for
+// products without a nutrition table — missing fields are surfaced via
+// OcrResult.warnings so the user can complete them in the edit form.
 export async function POST(request: Request) {
   let formData: FormData
   try {
@@ -44,16 +48,27 @@ export async function POST(request: Request) {
     )
   }
 
+  // Append machine-generated warnings for missing required fields and
+  // ingredient-only labels so the UI can guide the user to fill them manually.
   const missing = getMissingFields(result.data)
-  if (missing.length > 0) {
-    return NextResponse.json(
-      {
-        error: `Nilai berikut tidak dapat dibaca: ${missing.join(', ')}. Periksa foto dan coba lagi.`,
-        partial: result.data,
-      },
-      { status: 422 }
+  const extraWarnings: string[] = []
+
+  if (!result.data.has_nutrition_table) {
+    extraWarnings.push(
+      'Tabel nilai gizi tidak ditemukan — nilai diambil dari keterangan lain pada label, atau isi secara manual.'
     )
   }
 
-  return NextResponse.json(result.data)
+  if (missing.length > 0) {
+    extraWarnings.push(
+      `Nilai berikut tidak terbaca: ${missing.join(', ')}. Periksa foto atau isi secara manual.`
+    )
+  }
+
+  const data: OcrResult = {
+    ...result.data,
+    warnings: [...result.data.warnings, ...extraWarnings],
+  }
+
+  return NextResponse.json(data)
 }

@@ -4,6 +4,7 @@ type Props = {
   result: CalcResultOk
 }
 
+// Official KMK 301/2026 Lampiran B colors
 const LEVEL_COLORS: Record<Level, string> = {
   A: 'var(--nutri-a)',
   B: 'var(--nutri-b)',
@@ -11,9 +12,12 @@ const LEVEL_COLORS: Record<Level, string> = {
   D: 'var(--nutri-d)',
 }
 
+// Level B (#87C440 light green) and C (#FABE2D yellow) need dark foreground text
+const NEEDS_DARK_TEXT = new Set<Level>(['B', 'C'])
+
 const NUTRIENT_LABEL: Record<CalcResultOk['worstNutrient'], string> = {
-  gula: 'gula',
-  natrium: 'garam',
+  gula:       'gula',
+  natrium:    'garam',
   lemakJenuh: 'lemak jenuh',
 }
 
@@ -24,29 +28,35 @@ export function NutriLevelBadge({ result }: Props) {
   const activeColor = LEVEL_COLORS[level]
 
   return (
-    <div className="flex items-center gap-4">
-      {/* Badge — all four letters, active one enlarged */}
-      <div className="flex items-end gap-1">
+    <div className="flex items-center gap-5">
+      {/* Four-letter badge per KMK spec — active letter enlarged */}
+      <div className="flex items-end gap-1.5">
         {LEVELS.map((l) => {
           const isActive = l === level
           const color = LEVEL_COLORS[l]
+          const fg = NEEDS_DARK_TEXT.has(l) ? '#1B1916' : '#FFFFFF'
           return (
             <div
               key={l}
-              className={
+              className="flex items-center justify-center rounded font-black select-none"
+              style={
                 isActive
-                  ? 'flex items-center justify-center rounded font-black'
-                  : 'flex items-center justify-center rounded font-bold opacity-50'
+                  ? {
+                      backgroundColor: color,
+                      color: fg,
+                      width: '3.75rem',
+                      height: '3.75rem',
+                      fontSize: '1.875rem',
+                    }
+                  : {
+                      border: `2px solid ${color}`,
+                      color,
+                      opacity: 0.4,
+                      width: '2.25rem',
+                      height: '2.25rem',
+                      fontSize: '1.125rem',
+                    }
               }
-              // Active letter is larger per KMK badge spec
-              style={{
-                ...(isActive
-                  ? { backgroundColor: color, color: '#fff' }
-                  : { border: `2px solid ${color}`, color }),
-                width: isActive ? '3.5rem' : '2rem',
-                height: isActive ? '3.5rem' : '2rem',
-                fontSize: isActive ? '1.75rem' : '1rem',
-              }}
               aria-label={isActive ? `Nutri-Level ${l} (aktif)` : `Level ${l}`}
             >
               {l}
@@ -56,16 +66,17 @@ export function NutriLevelBadge({ result }: Props) {
       </div>
 
       {/* Worst-nutrient callout */}
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-0.5">
         <span
-          className="text-3xl font-black leading-none"
+          className="text-3xl font-black leading-none tracking-tight"
           style={{ color: activeColor }}
         >
           {worstDisplayPercent}%
         </span>
-        <span className="text-sm text-gray-600 font-bold uppercase tracking-wide">
+        <span className="text-xs font-bold uppercase tracking-widest text-[var(--tx-2)]">
           {NUTRIENT_LABEL[worstNutrient]}
         </span>
+        <span className="text-[11px] text-[var(--tx-3)]">per 100 ml</span>
       </div>
     </div>
   )

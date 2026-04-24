@@ -18,6 +18,8 @@ const LEVEL_LABEL: Record<Level, string> = {
   D: 'Level D',
 }
 
+const NEEDS_DARK_TEXT = new Set<Level>(['B', 'C'])
+
 type Row = {
   label: string
   value: string
@@ -46,23 +48,31 @@ export function NutrientBreakdown({ result }: Props) {
   ]
 
   return (
-    <div className="w-full">
-      <h3 className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-3">
-        Rincian Kandungan
-      </h3>
-      <div className="flex flex-col gap-2">
+    <div className="w-full flex flex-col gap-2.5">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--tx-3)]">
+        Rincian per 100 ml
+      </p>
+
+      <div className="flex flex-col gap-1.5">
         {rows.map((row) => (
           <div
             key={row.label}
-            className="flex items-center justify-between rounded-lg px-4 py-3 bg-gray-50"
+            className="flex items-center justify-between rounded-xl px-4 py-3"
+            style={{
+              background: 'var(--surface-hi)',
+              border: '1px solid var(--border-lo)',
+            }}
           >
-            <div className="flex flex-col">
-              <span className="font-semibold text-gray-800">{row.label}</span>
-              <span className="text-sm text-gray-500">{row.value}</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-[var(--tx-1)]">{row.label}</span>
+              <span className="text-xs text-[var(--tx-3)]">{row.value}</span>
             </div>
             <span
-              className="text-sm font-black px-3 py-1 rounded-full text-white"
-              style={{ backgroundColor: LEVEL_COLORS[row.level] }}
+              className="text-xs font-black px-3 py-1 rounded-full shrink-0"
+              style={{
+                backgroundColor: LEVEL_COLORS[row.level],
+                color: NEEDS_DARK_TEXT.has(row.level) ? '#1B1916' : '#FFFFFF',
+              }}
             >
               {LEVEL_LABEL[row.level]}
             </span>
@@ -71,13 +81,22 @@ export function NutrientBreakdown({ result }: Props) {
       </div>
 
       {result.notes.length > 0 && (
-        <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-yellow-700 mb-1">
+        <div
+          className="rounded-xl px-4 py-3 mt-1"
+          style={{
+            background: 'var(--warn-bg)',
+            border: '1px solid var(--warn-border)',
+          }}
+        >
+          <p
+            className="text-[11px] font-bold uppercase tracking-widest mb-1.5"
+            style={{ color: 'var(--warn-tx)' }}
+          >
             Catatan
           </p>
           <ul className="list-disc list-inside space-y-1">
             {result.notes.map((note) => (
-              <li key={note} className="text-sm text-yellow-800">
+              <li key={note} className="text-xs" style={{ color: 'var(--warn-tx)' }}>
                 {note}
               </li>
             ))}
