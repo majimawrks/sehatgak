@@ -227,8 +227,8 @@ export default async function Home({ searchParams }: Props) {
                   Kamurocho Drinks Co.
                 </p>
               </div>
-              <NutriLevelBadge result={sampleResult} />
-              <NutrientBreakdown result={sampleResult} />
+              <NutriLevelBadge result={sampleResult} unit="ml" />
+              <NutrientBreakdown result={sampleResult} unit="ml" />
             </div>
           </section>
         )}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { extractNutritionLabel } from '@/lib/ocr/gemini'
 import { getMissingFields } from '@/lib/ocr/schema'
 import type { OcrResult } from '@/lib/ocr/schema'
+import { isAllowedOrigin } from '@/lib/http/origin'
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
@@ -12,6 +13,10 @@ type AllowedMime = (typeof ALLOWED_TYPES)[number]
 // products without a nutrition table — missing fields are surfaced via
 // OcrResult.warnings so the user can complete them in the edit form.
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Origin tidak diizinkan' }, { status: 403 })
+  }
+
   let formData: FormData
   try {
     formData = await request.formData()
@@ -36,16 +41,37 @@ export async function POST(request: Request) {
   }
 
   const buffer = await file.arrayBuffer()
+
+  // Magic-byte sniff: reject files whose actual bytes don't match the declared MIME.
+  // JPEG: FF D8 FF  |  PNG: 89 50 4E 47  |  WebP: 52 49 46 46 ?? ?? ?? ?? 57 45 42 50
+  const bytes = new Uint8Array(buffer)
+  function sniffMime(b: Uint8Array): AllowedMime | null {
+    if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg'
+    if (b.length >= 4 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'image/png'
+    if (
+      b.length >= 12 &&
+      b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50
+    ) return 'image/webp'
+    return null
+  }
+  const sniffed = sniffMime(bytes)
+  if (!sniffed || sniffed !== (file.type as AllowedMime)) {
+    return NextResponse.json({ error: 'Gambar tidak valid atau format tidak sesuai.' }, { status: 422 })
+  }
+
   const base64 = Buffer.from(buffer).toString('base64')
 
   const result = await extractNutritionLabel(base64, file.type as AllowedMime)
 
   if (!result.ok) {
+    console.error('[ocr]', result.code, result.message, result.raw ?? '')
     const status = result.code === 'rate_limited' ? 503 : 422
-    return NextResponse.json(
-      { error: result.message, ...(result.raw ? { raw: result.raw } : {}) },
-      { status }
-    )
+    const userMessage =
+      result.code === 'rate_limited'
+        ? 'Terlalu banyak permintaan. Coba lagi sebentar.'
+        : 'Gagal memindai label. Coba foto ulang atau isi manual.'
+    return NextResponse.json({ error: userMessage }, { status })
   }
 
   // Append machine-generated warnings for missing required fields and

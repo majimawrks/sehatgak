@@ -20,9 +20,9 @@ export async function extractNutritionLabel(
 
   let response: Response
   try {
-    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+    response = await fetch(GEMINI_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify({
         contents: [
           {
@@ -48,7 +48,8 @@ export async function extractNutritionLabel(
 
   if (!response.ok) {
     const text = await response.text().catch(() => '')
-    return { ok: false, code: 'api_error', message: `Gemini error ${response.status}: ${text}` }
+    console.error(`[gemini] ${response.status}: ${text}`)
+    return { ok: false, code: 'api_error', message: 'Layanan OCR tidak tersedia' }
   }
 
   let responseJson: unknown

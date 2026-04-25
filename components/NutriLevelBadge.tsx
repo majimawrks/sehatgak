@@ -2,6 +2,7 @@ import type { CalcResultOk, Level } from '@/lib/nutrilevel/types'
 
 type Props = {
   result: CalcResultOk
+  unit: 'ml' | 'g'
 }
 
 // Official KMK 301/2026 Lampiran B colors
@@ -23,7 +24,7 @@ const NUTRIENT_LABEL: Record<CalcResultOk['worstNutrient'], string> = {
 
 const LEVELS: Level[] = ['A', 'B', 'C', 'D']
 
-export function NutriLevelBadge({ result }: Props) {
+export function NutriLevelBadge({ result, unit }: Props) {
   const { level, worstNutrient, worstDisplayPercent } = result
   const activeColor = LEVEL_COLORS[level]
 
@@ -76,7 +77,7 @@ export function NutriLevelBadge({ result }: Props) {
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--tx-2)]">
           {NUTRIENT_LABEL[worstNutrient]}
         </span>
-        <span className="text-[11px] text-[var(--tx-3)]">per 100 ml</span>
+        <span className="text-[11px] text-[var(--tx-3)]">per 100 {unit}</span>
       </div>
     </div>
   )

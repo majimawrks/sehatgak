@@ -137,8 +137,8 @@ export default async function ProductPage({ params }: Props) {
         {/* ── Nutri-Level ──────────────────────────────────────────────── */}
         {result ? (
           <div className="flex flex-col gap-4">
-            <NutriLevelBadge result={result} />
-            <NutrientBreakdown result={result} />
+            <NutriLevelBadge result={result} unit={unit} />
+            <NutrientBreakdown result={result} unit={unit} />
           </div>
         ) : (
           <div

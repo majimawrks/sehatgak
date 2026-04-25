@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(bunx create-next-app@latest . --typescript --tailwind --eslint --app --import-alias \"@/*\" --no-src-dir --yes)",
-      "Bash(bun add *)"
+      "Bash(bun add *)",
+      "Bash(bun run *)",
+      "Bash(./node_modules/.bin/next build *)",
+      "Bash(ls node_modules/.bin/next*)",
+      "Bash(bun --version)",
+      "Bash(/c/Users/GDSST/.bun/bin/bun run *)",
+      "Bash(export PATH=\"$PATH:/c/Users/GDSST/.bun/bin\")",
+      "Bash(bun x *)",
+      "Bash(bun install *)",
+      "Bash(bun test *)"
     ]
   }
 }

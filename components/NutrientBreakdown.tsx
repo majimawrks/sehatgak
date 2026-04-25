@@ -2,6 +2,7 @@ import type { CalcResultOk, Level } from '@/lib/nutrilevel/types'
 
 type Props = {
   result: CalcResultOk
+  unit: 'ml' | 'g'
 }
 
 const LEVEL_COLORS: Record<Level, string> = {
@@ -26,23 +27,23 @@ type Row = {
   level: Level
 }
 
-export function NutrientBreakdown({ result }: Props) {
+export function NutrientBreakdown({ result, unit }: Props) {
   const { breakdown } = result
 
   const rows: Row[] = [
     {
       label: 'Gula',
-      value: `${breakdown.gula.per100ml.toFixed(1)} g / 100 ml`,
+      value: `${breakdown.gula.per100ml.toFixed(1)} g / 100 ${unit}`,
       level: breakdown.gula.level,
     },
     {
       label: 'Garam (Natrium)',
-      value: `${breakdown.natrium.per100ml.toFixed(0)} mg / 100 ml`,
+      value: `${breakdown.natrium.per100ml.toFixed(0)} mg / 100 ${unit}`,
       level: breakdown.natrium.level,
     },
     {
       label: 'Lemak Jenuh',
-      value: `${breakdown.lemakJenuh.per100ml.toFixed(1)} g / 100 ml`,
+      value: `${breakdown.lemakJenuh.per100ml.toFixed(1)} g / 100 ${unit}`,
       level: breakdown.lemakJenuh.level,
     },
   ]
@@ -50,7 +51,7 @@ export function NutrientBreakdown({ result }: Props) {
   return (
     <div className="w-full flex flex-col gap-2.5">
       <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--tx-3)]">
-        Rincian per 100 ml
+        Rincian per 100 {unit}
       </p>
 
       <div className="flex flex-col gap-1.5">

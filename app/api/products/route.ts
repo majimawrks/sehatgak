@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { productInsertSchema, productRowSchema } from '@/lib/supabase/schema'
+import { isAllowedOrigin } from '@/lib/http/origin'
 import { z } from 'zod'
 
 // GET /api/products — returns latest 20 products
@@ -29,6 +30,10 @@ export async function GET() {
 
 // POST /api/products — saves a new product
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Origin tidak diizinkan' }, { status: 403 })
+  }
+
   let body: unknown
   try {
     body = await request.json()

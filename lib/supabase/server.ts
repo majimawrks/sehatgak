@@ -1,14 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Server-only client — same anon key for v1 (no service_role needed since RLS is permissive).
-// Must only be called from Server Components or API routes.
+// Server-only client using the service_role key — bypasses RLS.
+// NEVER import this from a Client Component or Edge Middleware.
 export function createServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const key = process.env.SUPABASE_SECRET_KEY
 
   if (!url || !key) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY')
   }
 
-  return createClient(url, key)
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
 }

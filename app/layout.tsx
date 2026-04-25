@@ -7,18 +7,6 @@ export const metadata: Metadata = {
   description: 'Scan label minuman dan ketahui Nutri-Level A/B/C/D sesuai KMK HK.01.07/MENKES/301/2026.',
 }
 
-// Inline script that runs synchronously before first paint to prevent
-// flash of wrong theme. Reads localStorage and applies .dark to <html>
-// before React hydrates.
-const themeScript = `
-  try {
-    var t = localStorage.getItem('theme');
-    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-  } catch(e) {}
-`
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +17,9 @@ export default function RootLayout({
     // render and client (theme depends on localStorage / media query).
     <html lang="id" className="h-full" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Runs before first paint to prevent flash of wrong theme. Served from
+            /theme.js so CSP can use script-src 'self' without unsafe-inline. */}
+        <script src="/theme.js" />
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <DisclaimerModal />

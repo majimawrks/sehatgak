@@ -12,7 +12,7 @@ import type { CalcResultOk } from '@/lib/nutrilevel/types'
 import type { Category } from '@/lib/supabase/types'
 import { CATEGORY_LABEL } from '@/lib/supabase/types'
 
-// Loaded only on the client — html5-qrcode uses browser APIs
+// Loaded only on the client — BarcodeScanner uses browser APIs
 const BarcodeScanner = dynamic(
   () => import('@/components/BarcodeScanner').then(m => m.BarcodeScanner),
   { ssr: false }
@@ -573,8 +573,8 @@ export function ScanClient() {
                 className="rounded-2xl px-5 py-5 flex flex-col gap-4"
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               >
-                <NutriLevelBadge result={result} />
-                <NutrientBreakdown result={result} />
+                <NutriLevelBadge result={result} unit={unit} />
+                <NutrientBreakdown result={result} unit={unit} />
               </div>
             )}
 

@@ -2,20 +2,20 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 // GET /api/products/lookup?barcode=8991234567890
-// Returns { found: true, id, nama } or { found: false }
+// Returns { found: true, id } or { found: false }
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const barcode = searchParams.get('barcode')?.trim()
 
-  if (!barcode || barcode === 'N/A') {
-    return NextResponse.json({ error: 'Barcode tidak valid' }, { status: 400 })
+  if (!barcode || barcode === 'N/A' || !/^\d{8,14}$/.test(barcode)) {
+    return NextResponse.json({ error: 'Format barcode tidak valid' }, { status: 400 })
   }
 
   const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('products')
-    .select('id, nama')
+    .select('id')
     .eq('barcode', barcode)
     .maybeSingle()
 
@@ -28,5 +28,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ found: false })
   }
 
-  return NextResponse.json({ found: true, id: data.id, nama: data.nama })
+  return NextResponse.json({ found: true, id: data.id })
 }
