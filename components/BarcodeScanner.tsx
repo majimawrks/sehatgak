@@ -2,10 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-// Unique DOM id for the html5-qrcode container.
-// Only one scanner can exist per page anyway.
-const CONTAINER_ID = 'sg-barcode-scanner'
-
 type Status = 'starting' | 'active' | 'denied'
 
 type Props = {
@@ -14,7 +10,8 @@ type Props = {
 
 export function BarcodeScanner({ onScan }: Props) {
   const [status, setStatus] = useState<Status>('starting')
-  // Stable ref so the scanner callback always calls the latest onScan
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  // Stable ref so the decode callback always calls the latest onScan
   const onScanRef = useRef(onScan)
   useEffect(() => { onScanRef.current = onScan }, [onScan])
 
@@ -22,66 +19,65 @@ export function BarcodeScanner({ onScan }: Props) {
     let isMounted = true
     // Prevent the success callback from firing more than once
     let alreadyScanned = false
+    // IScannerControls from @zxing/browser — used to release the camera on unmount
+    let controls: { stop: () => void } | null = null
 
     async function start() {
       try {
-        // Dynamic import keeps html5-qrcode out of the server bundle entirely
-        const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode')
+        // Dynamic import keeps @zxing/browser out of the server bundle entirely
+        const { BrowserMultiFormatReader } = await import('@zxing/browser')
         if (!isMounted) return
 
-        const scanner = new Html5Qrcode(CONTAINER_ID, {
-          // Only scan product barcode formats — skips QR parsing overhead
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-          ],
-          verbose: false,
-        })
+        // No format hints — DecodeHintType is not re-exported by @zxing/browser.
+        // BrowserMultiFormatReader defaults to all supported formats, which is fine
+        // for product barcodes (EAN-13, UPC-A, etc.).
+        const reader = new BrowserMultiFormatReader()
+        const videoEl = videoRef.current
+        if (!videoEl) return
 
-        await scanner.start(
-          { facingMode: 'environment' },
-          {
-            fps: 10,
-            // Rectangular scan box — better fit for landscape barcodes
-            qrbox: { width: 260, height: 100 },
-          },
-          (decoded) => {
-            if (alreadyScanned) return
+        // decodeFromConstraints uses getUserMedia under the hood — works on iOS Safari
+        // when the page is served over HTTPS (Netlify provides this).
+        controls = await reader.decodeFromConstraints(
+          { video: { facingMode: 'environment' } },
+          videoEl,
+          (result) => {
+            if (!result || alreadyScanned) return
             alreadyScanned = true
-            // Stop immediately so the camera releases
-            scanner.stop().catch(() => {})
-            onScanRef.current(decoded)
-          },
-          undefined // frame-level errors — ignore
+            controls?.stop()
+            onScanRef.current(result.getText())
+          }
         )
 
         if (isMounted) setStatus('active')
-
-        return () => { scanner.stop().catch(() => {}) }
       } catch {
         if (isMounted) setStatus('denied')
       }
     }
 
-    const cleanup = start()
+    start()
 
     return () => {
       isMounted = false
-      cleanup.then(fn => fn?.()).catch(() => {})
+      controls?.stop()
     }
   }, []) // run once on mount
 
   return (
     <div className="flex flex-col gap-3">
-      {/* html5-qrcode renders the video + scan-box overlay into this div */}
+      {/* @zxing attaches the camera stream to this video element */}
       <div
-        id={CONTAINER_ID}
         className="w-full rounded-2xl overflow-hidden"
         style={{ minHeight: 240, background: 'var(--surface-hi)' }}
-      />
+      >
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          style={{ minHeight: 240 }}
+          muted
+          playsInline
+          autoPlay
+        />
+      </div>
 
       {status === 'starting' && (
         <div className="flex items-center justify-center gap-2 py-1">
