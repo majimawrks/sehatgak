@@ -9,7 +9,11 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "media-src 'self' blob:",
       "connect-src 'self' https://*.supabase.co",
-      "script-src 'self'",
+      // Next.js App Router streams hydration via inline <script> tags (flight
+      // payload). Without 'unsafe-inline' the page renders but never hydrates,
+      // leaving loading.tsx visible forever. Proper fix would be nonce-based
+      // middleware — out of scope for v1.
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "frame-ancestors 'none'",
