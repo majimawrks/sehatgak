@@ -6,6 +6,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.9.0] — 2026-04-24
+
+### Security
+- **C2** — Gemini API key moved from URL query string to `x-goog-api-key` request header (`lib/ocr/gemini.ts`)
+- **C3** — Upstream Gemini error bodies no longer forwarded to clients; generic Bahasa message returned, detail logged server-side
+- **C4** — Magic-byte sniff on uploaded images rejects files whose bytes don't match declared MIME (prevents mislabeled content reaching Gemini)
+- **C6** — Barcode lookup route validates format (`^\d{8,14}$`) and stops returning `nama` (reduces enumeration oracle exposure)
+- **C7** — Origin/Referer check on all POST API routes; cross-origin requests rejected with 403
+- **C8** — Security headers added via `next.config.ts`: CSP, `Referrer-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Permissions-Policy`; inline theme script extracted to `public/theme.js`
+
+### Fixed
+- "Rincian per 100 ml" and "/ 100 ml" labels now correctly show "g" instead of "ml" for non-liquid categories (Snack, Makanan, Lainnya) in both `NutriLevelBadge` and `NutrientBreakdown` components
+- iOS Safari barcode scanning — replaced `html5-qrcode` with `@zxing/browser`. iOS lacks the `BarcodeDetector` API and the prior library's fallback path had iOS-specific camera-stream bugs. Android and desktop behavior unchanged.
+
+### Pending (user action required)
+- **C1** — Cloudflare WAF rate-limit rules for `/api/ocr` (10 req/min/IP) and `/api/products` (30 req/min/IP) — see `_drafts/fix-guidelines.md`
+- **C5** — Switch server Supabase client to `service_role` key + tighten RLS — requires `SUPABASE_SECRET_KEY` env var; see `_drafts/fix-guidelines.md`
+
+---
+
 ## [0.8.0] — 2026-04-24
 
 ### Added
