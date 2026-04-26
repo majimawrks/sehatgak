@@ -22,17 +22,10 @@ const NUTRIENT_LABEL: Record<CalcResultOk['worstNutrient'], string> = {
   lemakJenuh: 'lemak jenuh',
 }
 
-const NUTRIENT_UNIT: Record<CalcResultOk['worstNutrient'], string> = {
-  gula:       'g',
-  natrium:    'mg',
-  lemakJenuh: 'g',
-}
-
 const LEVELS: Level[] = ['A', 'B', 'C', 'D']
 
 export function NutriLevelBadge({ result, unit }: Props) {
   const { level, worstNutrient, worstDisplayPercent } = result
-  const worstUnit = NUTRIENT_UNIT[worstNutrient]
   const activeColor = LEVEL_COLORS[level]
 
   return (
@@ -79,7 +72,7 @@ export function NutriLevelBadge({ result, unit }: Props) {
           className="text-3xl font-black leading-none tracking-tight"
           style={{ color: activeColor }}
         >
-          {worstDisplayPercent} {worstUnit}
+          {worstDisplayPercent}%
         </span>
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--tx-2)]">
           {NUTRIENT_LABEL[worstNutrient]}

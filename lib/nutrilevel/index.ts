@@ -58,11 +58,12 @@ export function calculateLevel(input: CalcInput): CalcResult {
 
   const worst = candidates.find((c) => c.lvl === finalLevel)!
 
-  // Worst display percent: for gula use the rounding table value; others use per-100ml integer.
+  // Worst display percent: express all nutrients as g/100ml (natrium converted from mg).
+  // This keeps the "%" display consistent across all nutrients (g/100ml ≈ % by weight).
   const worstDisplayPercent =
     worst.nutrient === 'gula'
       ? gulaDisplayPercent
-      : Math.round(worst.nutrient === 'natrium' ? natriumPer100 : lemakPer100)
+      : Math.round(worst.nutrient === 'natrium' ? natriumPer100 / 1000 : lemakPer100)
 
   return {
     exempt: false,
