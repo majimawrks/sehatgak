@@ -6,6 +6,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- `NutriLevelBadge` worst-nutrient callout now shows correct unit per nutrient (`g` for gula/lemak jenuh, `mg` for natrium) instead of always appending `%`. Previously a high-sodium product like a 5143 mg/100g sauce displayed as "5143%", which was nonsensical.
+
+---
+
 ## [0.9.0] — 2026-04-24
 
 ### Security
