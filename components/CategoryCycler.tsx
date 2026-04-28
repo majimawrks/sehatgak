@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react'
 
 const ITEMS = [
-  { label: 'minuman',  color: 'var(--action)' },
-  { label: 'snack',    color: '#D4850A' },
-  { label: 'makanan',  color: '#5563B0' },
-  { label: 'lainnya',  color: 'var(--tx-2)' },
+  { label: 'minuman', color: 'var(--action)' },
+  { label: 'snack',   color: '#D4850A' },
+  { label: 'makanan', color: '#5563B0' },
 ] as const
 
 export function CategoryCycler() {
