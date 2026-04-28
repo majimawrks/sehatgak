@@ -19,16 +19,18 @@ export function CategoryCycler() {
     return () => clearInterval(id)
   }, [])
 
+  const item = ITEMS[index % ITEMS.length]!
+
   return (
     <span
       key={index}
       style={{
-        color: ITEMS[index].color,
+        color: item.color,
         display: 'inline-block',
         animation: 'sg-word-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both',
       }}
     >
-      {ITEMS[index].label}
+      {item.label}
     </span>
   )
 }
