@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 import { NutriLevelBadge } from '@/components/NutriLevelBadge'
 import { NutrientBreakdown } from '@/components/NutrientBreakdown'
 import { ProductCard } from '@/components/ProductCard'
+import { CategoryCycler } from '@/components/CategoryCycler'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createServerClient } from '@/lib/supabase/server'
 import type { CalcResultOk } from '@/lib/nutrilevel/types'
@@ -30,7 +31,7 @@ async function getProducts(q?: string): Promise<ProductRow[]> {
     .from('products')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(20)
+    .limit(5)
 
   if (q?.trim()) {
     query = query.ilike('nama', `%${q.trim()}%`)
@@ -87,10 +88,10 @@ export default async function Home({ searchParams }: Props) {
             className="text-2xl font-black leading-tight tracking-tight"
             style={{ color: 'var(--tx-1)' }}
           >
-            Sehat gak<br />minuman ini?
+            Sehat gak<br /><CategoryCycler /> ini?
           </h1>
           <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'var(--tx-2)' }}>
-            Scan label gizi minuman dan ketahui Nutri-Level A/B/C/D
+            Scan label gizi produk dan ketahui Nutri-Level A/B/C/D
             sesuai standar Kemenkes RI.
           </p>
           {/* No JS event handlers — hover via Tailwind arbitrary-value class */}
@@ -162,11 +163,25 @@ export default async function Home({ searchParams }: Props) {
         {/* ── Product list ─────────────────────────────────────────────── */}
         {products.length > 0 ? (
           <section className="flex flex-col gap-3">
-            <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--tx-3)' }}>
-              {isSearching
-                ? `${products.length} hasil untuk "${q}"`
-                : 'Produk Terbaru'}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--tx-3)' }}>
+                {isSearching
+                  ? `${products.length} hasil untuk "${q}"`
+                  : 'Produk Terbaru'}
+              </p>
+              {!isSearching && (
+                <a
+                  href="/produk"
+                  className="flex items-center gap-1 text-xs font-bold transition-colors hover:opacity-70"
+                  style={{ color: 'var(--action)' }}
+                >
+                  Lihat semua
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </a>
+              )}
+            </div>
             <div className="flex flex-col gap-2">
               {products.map((p) => (
                 <ProductCard
